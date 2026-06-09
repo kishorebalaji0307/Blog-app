@@ -18,6 +18,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+    bio: {
+      type: String,
+      default: "Welcome to my Bloggram profile! Exploring the virtual space one post at a time. 🚀",
+      maxlength: 150,
+    },
   },
   { timestamps: true }
 );

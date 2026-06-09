@@ -31,4 +31,26 @@ router.get("/profile", authMiddleware, async (req, res) => {
   }
 });
 
+router.put("/profile", authMiddleware, async (req, res) => {
+  try {
+    const { name, bio } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (name) user.name = name;
+    if (bio !== undefined) user.bio = bio;
+    await user.save();
+
+    const updatedUser = await User.findById(req.user.id).select("-password");
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 export default router;

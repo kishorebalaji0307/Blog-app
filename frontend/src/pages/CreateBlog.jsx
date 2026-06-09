@@ -10,6 +10,7 @@ const CreateBlog = () => {
   const [category, setCategory] = useState("");
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
+  const [user, setUser] = useState(null);
   const [userId, setUserId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -24,6 +25,7 @@ const CreateBlog = () => {
           const res = await axios.get(`${import.meta.env.VITE_API_URL}/users/profile`, {
             headers: { Authorization: `Bearer ${token}` },
           });
+          setUser(res.data.user);
           setUserId(res.data.user.id || res.data.user._id);
         }
       } catch (err) {
@@ -134,67 +136,112 @@ const CreateBlog = () => {
         <div className="create-blog-card">
           <h1>{id ? "Edit Post" : "Create New Post"}</h1>
 
-          <form className="blog-form" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Post Caption/Title"
-              className="blog-input"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
+          <form className="blog-form-grid" onSubmit={handleSubmit}>
+            {/* Left Column: Image Upload & Preview */}
+            <div className="image-upload-pane">
+              {imageUrl || image ? (
+                <div className="image-preview-wrapper">
+                  <img
+                    src={image ? URL.createObjectURL(image) : imageUrl}
+                    alt="Current Preview"
+                    className="image-preview"
+                  />
+                  <div className="change-image-overlay">
+                    <label htmlFor="file-upload" className="change-image-btn">
+                      Change Photo
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <label htmlFor="file-upload" className="dropzone-placeholder">
+                  <div className="dropzone-content">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="upload-icon">
+                      <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                      <circle cx="9" cy="9" r="2"/>
+                      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                    </svg>
+                    <span>Click to upload post image</span>
+                  </div>
+                </label>
+              )}
+              <input
+                id="file-upload"
+                type="file"
+                accept="image/*"
+                className="hidden-file-input"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setImage(file);
+                    setImageUrl("");
+                  }
+                }}
+              />
+            </div>
 
-            <input
-              type="text"
-              placeholder="Category / Tags"
-              className="blog-input"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            />
+            {/* Right Column: Details Pane */}
+            <div className="details-pane">
+              {/* User profile header inside creator (Instagram style) */}
+              <div className="author-header">
+                <div className="author-avatar">
+                  {user?.name ? user.name[0].toUpperCase() : "U"}
+                </div>
+                <span className="author-name">{user?.name || "User"}</span>
+              </div>
 
-            {imageUrl && (
-              <div style={{ position: "relative", width: "100%", maxHeight: "200px", overflow: "hidden", borderRadius: "8px", border: "1px solid #dbdbdb" }}>
-                <img
-                  src={imageUrl}
-                  alt="Current Preview"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              <div className="input-group">
+                <input
+                  type="text"
+                  placeholder="Post Caption / Title..."
+                  className="blog-input-clean"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
                 />
               </div>
-            )}
 
-            <input
-              type="file"
-              className="blog-input"
-              onChange={(e) => setImage(e.target.files[0])}
-            />
+              <div className="input-group">
+                <input
+                  type="text"
+                  placeholder="Add category / tags..."
+                  className="blog-input-clean"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                />
+              </div>
 
-            <textarea
-              placeholder="Write description..."
-              rows="8"
-              className="blog-textarea"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            />
+              <div className="input-group flex-grow">
+                <textarea
+                  placeholder="Write description..."
+                  rows="6"
+                  className="blog-textarea-clean"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                />
+              </div>
 
-            <button
-              type="submit"
-              className="publish-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? "Saving..." : id ? "Update Post" : "Publish Post"}
-            </button>
+              <div className="action-buttons">
+                <button
+                  type="submit"
+                  className="publish-btn"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Saving..." : id ? "Update Post" : "Publish Post"}
+                </button>
 
-            {id && (
-              <button
-                type="button"
-                className="delete-btn"
-                onClick={handleDelete}
-                disabled={isLoading}
-              >
-                Delete Post
-              </button>
-            )}
+                {id && (
+                  <button
+                    type="button"
+                    className="delete-btn"
+                    onClick={handleDelete}
+                    disabled={isLoading}
+                  >
+                    Delete Post
+                  </button>
+                )}
+              </div>
+            </div>
           </form>
         </div>
       </main>
