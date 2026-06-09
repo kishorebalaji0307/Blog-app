@@ -1,0 +1,236 @@
+/* App Container layout */
+.app-container {
+  display: flex;
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  margin-left: 240px; /* aligns with desktop sidebar width */
+  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.feed-container {
+  width: 100%;
+  max-width: 480px; /* Instagram feed standard width */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Instagram Post card */
+.instagram-post {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-normal);
+}
+
+.instagram-post:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+}
+
+.post-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: 2px solid var(--bg-secondary);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.post-username {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  display: block;
+}
+
+.post-location {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 2px;
+}
+
+.post-options-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  padding: 4px;
+  transition: var(--transition-fast);
+}
+
+.post-options-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Post image */
+.post-image-container {
+  width: 100%;
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.post-image {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  max-height: 585px; /* standard square/portrait limit */
+}
+
+/* Actions bar */
+.post-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px 8px 18px;
+}
+
+.left-actions {
+  display: flex;
+  gap: 18px;
+}
+
+.action-btn, .action-btn-heart {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  transition: var(--transition-fast);
+}
+
+.action-btn:hover, .action-btn-heart:hover {
+  transform: scale(1.1);
+  color: var(--text-primary);
+}
+
+.action-btn-heart:hover {
+  color: #ef4444;
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.4));
+}
+
+.action-btn.bookmark:hover {
+  color: #eab308;
+  filter: drop-shadow(0 0 4px rgba(234, 179, 8, 0.4));
+}
+
+/* Post content text */
+.post-content {
+  padding: 0 18px 18px 18px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.post-likes {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.post-caption {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.caption-username {
+  font-weight: 600;
+  margin-right: 8px;
+  color: var(--text-primary);
+}
+
+.caption-text {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.caption-text b {
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+}
+
+.post-comments-link {
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  transition: var(--transition-fast);
+}
+
+.post-comments-link:hover {
+  color: var(--text-secondary);
+}
+
+.post-time {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+.no-blogs {
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  margin-top: 80px;
+}
+
+/* Mobile Media Query overrides */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 76px 12px 76px 12px; /* space for top header and bottom navbar */
+  }
+
+  .feed-container {
+    max-width: 100%;
+    gap: 16px;
+  }
+
+  .instagram-post {
+    border-radius: 12px;
+  }
+}
