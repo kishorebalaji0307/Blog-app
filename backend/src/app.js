@@ -9,7 +9,6 @@ app.get("/", (req, res) => {
   res.send("Blog API Running 🚀");
 });
 
-
 app.use("/api/upload", uploadRoutes);
 
 export default app;
