@@ -15,7 +15,7 @@ const Register = () => {
   useEffect(() => {
     const handleGoogleResponse = async (response) => {
       try {
-        const res = await axios.post("http://localhost:5000/api/users/google-auth", {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/users/google-auth`, {
           idToken: response.credential,
         });
 
@@ -62,7 +62,7 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:5000/api/users/register", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/users/register`, {
         name,
         email,
         password,

@@ -12,7 +12,7 @@ export default function Profile() {
     const fetchProfileData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/users/profile", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/users/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data.user);
@@ -23,7 +23,7 @@ export default function Profile() {
 
     const fetchBlogs = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/blogs");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/blogs`);
         setBlogs(res.data.blogs || res.data);
       } catch (err) {
         console.log(err);

@@ -15,7 +15,7 @@ const Login = () => {
   useEffect(() => {
     const handleGoogleResponse = async (response) => {
       try {
-        const res = await axios.post("http://localhost:5000/api/users/google-auth", {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/users/google-auth`, {
           idToken: response.credential,
         });
 
@@ -63,7 +63,7 @@ const Login = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/users/login",
+        `${import.meta.env.VITE_API_URL}/users/login`,
         {
           email,
           password,

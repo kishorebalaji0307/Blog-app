@@ -21,7 +21,7 @@ const CreateBlog = () => {
       try {
         const token = localStorage.getItem("token");
         if (token) {
-          const res = await axios.get("http://localhost:5000/api/users/profile", {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/users/profile`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setUserId(res.data.user.id || res.data.user._id);
@@ -38,7 +38,7 @@ const CreateBlog = () => {
     if (id) {
       const fetchBlog = async () => {
         try {
-          const res = await axios.get(`http://localhost:5000/api/blogs/${id}`);
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/blogs/${id}`);
           const blog = res.data.blog || res.data;
           setTitle(blog.title || "");
           setDescription(blog.description || "");
@@ -70,7 +70,7 @@ const CreateBlog = () => {
         formData.append("image", image);
 
         const { data } = await axios.post(
-          "http://localhost:5000/api/upload",
+          `${import.meta.env.VITE_API_URL}/upload`,
           formData
         );
         finalImageUrl = data.imageUrl;
@@ -87,14 +87,14 @@ const CreateBlog = () => {
 
       if (id) {
         await axios.put(
-          `http://localhost:5000/api/blogs/${id}`,
+          `${import.meta.env.VITE_API_URL}/blogs/${id}`,
           blogData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         alert("Blog updated successfully 🚀");
       } else {
         await axios.post(
-          "http://localhost:5000/api/blogs",
+          `${import.meta.env.VITE_API_URL}/blogs`,
           blogData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -114,7 +114,7 @@ const CreateBlog = () => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       try {
         const token = localStorage.getItem("token");
-        await axios.delete(`http://localhost:5000/api/blogs/${id}`, {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/blogs/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("Blog deleted successfully 🚀");
