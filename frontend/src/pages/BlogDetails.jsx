@@ -4,6 +4,7 @@ import axios from "axios";
 import Sidebar from "../component/Sidebar";
 import { FiHeart, FiBookmark, FiMessageCircle, FiChevronLeft, FiMoreVertical, FiShare2 } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { BlogDetailsSkeleton } from "../component/SkeletonLoader";
 import "../Style/BlogDetails.css";
 
 export default function BlogDetails() {
@@ -186,9 +187,7 @@ export default function BlogDetails() {
       <div className="blog-details-container">
         <Sidebar />
         <main className="blog-details-content">
-          <div className="blog-details-card" style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <p>Loading blog details... 🚀</p>
-          </div>
+          <BlogDetailsSkeleton />
         </main>
       </div>
     );
@@ -284,6 +283,20 @@ export default function BlogDetails() {
 
           {/* Description / Caption Content */}
           <div className="blog-details-desc">{blog.description}</div>
+
+          {/* Tagged Users List */}
+          {blog.taggedUsers && blog.taggedUsers.length > 0 && (
+            <div className="blog-details-tagged-users">
+              <span className="tagged-label">Tagged: </span>
+              <div className="tagged-pills-container">
+                {blog.taggedUsers.map((taggedUser) => (
+                  <span className="tagged-user-pill-view" key={taggedUser._id}>
+                    @{taggedUser.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Interaction Bar */}
           <div className="blog-interaction-bar">

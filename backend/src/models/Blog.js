@@ -29,6 +29,12 @@ const blogSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    taggedUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     comments: [
       {
         user: {

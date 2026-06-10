@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -14,6 +14,11 @@ const CreateBlog = () => {
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [taggedUsers, setTaggedUsers] = useState([]);
+  const [tagSearchQuery, setTagSearchQuery] = useState("");
+  const [tagSuggestions, setTagSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionsRef = useRef(null);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -37,6 +42,40 @@ const CreateBlog = () => {
     fetchUser();
   }, []);
 
+  // Fetch tag autocomplete suggestions
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (!tagSearchQuery.trim()) {
+        setTagSuggestions([]);
+        return;
+      }
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/users/search?q=${tagSearchQuery}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setTagSuggestions(res.data.users || []);
+      } catch (err) {
+        console.error("Error searching users:", err);
+      }
+    };
+
+    const delayDebounce = setTimeout(searchUsers, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [tagSearchQuery]);
+
+  // Click outside listener for autocomplete suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   useEffect(() => {
     if (id) {
       const fetchBlog = async () => {
@@ -46,6 +85,7 @@ const CreateBlog = () => {
           setTitle(blog.title || "");
           setDescription(blog.description || "");
           setImageUrl(blog.image || "");
+          setTaggedUsers(blog.taggedUsers || []);
         } catch (err) {
           console.log("Error fetching blog details:", err);
         }
@@ -57,6 +97,7 @@ const CreateBlog = () => {
         setDescription("");
         setImageUrl("");
         setImage(null);
+        setTaggedUsers([]);
       }, 0);
     }
   }, [id]);
@@ -84,6 +125,7 @@ const CreateBlog = () => {
         description,
         image: finalImageUrl,
         author: userId,
+        taggedUsers: taggedUsers.map((u) => u._id),
       };
 
       const token = localStorage.getItem("token");
@@ -213,6 +255,70 @@ const CreateBlog = () => {
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 />
+              </div>
+
+              <div className="input-group user-tagging-group" style={{ position: "relative" }} ref={suggestionsRef}>
+                <input
+                  type="text"
+                  placeholder="Tag users..."
+                  className="blog-input-clean"
+                  value={tagSearchQuery}
+                  onChange={(e) => {
+                    setTagSearchQuery(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                />
+                {showSuggestions && tagSuggestions.length > 0 && (
+                  <div className="tag-suggestions-dropdown">
+                    {tagSuggestions.map((suggestedUser) => (
+                      <div
+                        key={suggestedUser._id}
+                        className="suggestion-item"
+                        onClick={() => {
+                          if (!taggedUsers.some((u) => u._id === suggestedUser._id)) {
+                            setTaggedUsers((prev) => [...prev, suggestedUser]);
+                          }
+                          setTagSearchQuery("");
+                          setShowSuggestions(false);
+                        }}
+                      >
+                        <div className="suggestion-avatar">
+                          {suggestedUser.profileImage ? (
+                            <img src={suggestedUser.profileImage} alt={suggestedUser.name} className="avatar-img" />
+                          ) : (
+                            suggestedUser.name ? suggestedUser.name[0].toUpperCase() : "U"
+                          )}
+                        </div>
+                        <div className="suggestion-info">
+                          <span className="suggestion-name">{suggestedUser.name}</span>
+                          <span className="suggestion-email">{suggestedUser.email}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* Display currently selected tagged users */}
+                {taggedUsers.length > 0 && (
+                  <div className="tagged-users-list">
+                    {taggedUsers.map((taggedUser) => (
+                      <span className="tagged-user-pill" key={taggedUser._id}>
+                        @{taggedUser.name}
+                        <button
+                          type="button"
+                          className="remove-tag-btn"
+                          onClick={() =>
+                            setTaggedUsers((prev) =>
+                              prev.filter((u) => u._id !== taggedUser._id)
+                            )
+                          }
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="input-group flex-grow">

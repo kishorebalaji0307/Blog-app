@@ -250,3 +250,65 @@
 .action-btn.bookmark.bookmarked svg {
   fill: #eab308;
 }
+
+/* Post options menu dropdown styles */
+.post-menu-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--bg-secondary);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  min-width: 130px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: slideInDropdown 0.2s ease-out;
+}
+
+.dashboard-dropdown-item {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  text-decoration: none;
+  display: block;
+  box-sizing: border-box;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.dashboard-dropdown-item.edit-option {
+  color: var(--text-secondary);
+}
+
+.dashboard-dropdown-item.edit-option:hover {
+  background-color: rgba(99, 102, 241, 0.08);
+  color: var(--accent);
+}
+
+.dashboard-dropdown-item.delete-option {
+  color: #ef4444;
+}
+
+.dashboard-dropdown-item.delete-option:hover {
+  background-color: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+}

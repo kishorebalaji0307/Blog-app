@@ -10,6 +10,8 @@ import {
   saveBlog,
   addComment,
   deleteComment,
+  getBlogsByUser,
+  getBlogsByTaggedUser,
 } from "../controllers/blogController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -20,6 +22,12 @@ router.post("/", authMiddleware, createBlog);
 
 // Get All Blogs
 router.get("/", getBlogs);
+
+// Get Blogs by User
+router.get("/user/:userId", getBlogsByUser);
+
+// Get Blogs where User is Tagged
+router.get("/tagged/:userId", getBlogsByTaggedUser);
 
 // Get Single Blog
 router.get("/:id", getSingleBlog);

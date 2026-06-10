@@ -407,3 +407,40 @@
   background-color: rgba(239, 68, 68, 0.08);
   color: #dc2626;
 }
+
+/* Tagged users list styles */
+.blog-details-tagged-users {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+}
+
+[data-theme="dark"] .blog-details-tagged-users {
+  border-top-color: var(--glass-border);
+}
+
+.tagged-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.tagged-pills-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tagged-user-pill-view {
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}

@@ -15,6 +15,32 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/google-auth", googleAuth);
 
+router.get("/search", authMiddleware, async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.json({ users: [] });
+    }
+    const users = await User.find({
+      $and: [
+        { _id: { $ne: req.user.id } },
+        {
+          $or: [
+            { name: { $regex: q, $options: "i" } },
+            { email: { $regex: q, $options: "i" } }
+          ]
+        }
+      ]
+    })
+    .select("name email profileImage")
+    .limit(10);
+    
+    res.json({ users });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 router.get("/profile", authMiddleware, async (req, res) => {
   try {

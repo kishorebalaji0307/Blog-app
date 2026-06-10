@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { useEffect } from "react";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -11,6 +12,11 @@ import Profile from "./pages/Profile";
 import ProtectedRoute from "./component/ProtectedRoute";
 
 function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
+
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />

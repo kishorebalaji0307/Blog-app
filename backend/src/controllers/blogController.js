@@ -1,17 +1,29 @@
 import Blog from "../models/Blog.js";
 import User from "../models/User.js";
+import Notification from "../models/Notification.js";
 
 // Create Blog
 export const createBlog = async (req, res) => {
   try {
-    const { title, description, author, image } = req.body;
+    const { title, description, author, image, taggedUsers } = req.body;
 
     const blog = await Blog.create({
       title,
       description,
       author,
       image,
+      taggedUsers: taggedUsers || [],
     });
+
+    if (taggedUsers && Array.isArray(taggedUsers) && taggedUsers.length > 0) {
+      const notifications = taggedUsers.map((userId) => ({
+        recipient: userId,
+        sender: req.user?.id || author,
+        blog: blog._id,
+        type: "tag",
+      }));
+      await Notification.insertMany(notifications);
+    }
 
     res.status(201).json({
       success: true,
@@ -33,7 +45,8 @@ export const getBlogs = async (req, res) => {
 
     const blogs = await Blog.find()
       .populate("author")
-      .populate("comments.user", "name email")
+      .populate("taggedUsers", "name email profileImage")
+      .populate("comments.user", "name email profileImage")
       .skip((page - 1) * limit)
       .limit(limit);
 
@@ -56,7 +69,8 @@ export const getSingleBlog = async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id)
       .populate("author")
-      .populate("comments.user", "name email");
+      .populate("taggedUsers", "name email profileImage")
+      .populate("comments.user", "name email profileImage");
 
     if (!blog) {
       return res.status(404).json({
@@ -97,15 +111,36 @@ export const updateBlog = async (req, res) => {
       });
     }
 
-    const updatedBlog = await Blog.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const oldTagged = blog.taggedUsers ? blog.taggedUsers.map((id) => id.toString()) : [];
+    const newTagged = req.body.taggedUsers || [];
+    const newlyTagged = newTagged.filter((id) => !oldTagged.includes(id));
+
+    // Update blog
+    blog.title = req.body.title || blog.title;
+    blog.description = req.body.description || blog.description;
+    blog.image = req.body.image !== undefined ? req.body.image : blog.image;
+    blog.taggedUsers = newTagged;
+    await blog.save();
+
+    // Trigger notifications for newly tagged users
+    if (newlyTagged.length > 0) {
+      const notifications = newlyTagged.map((userId) => ({
+        recipient: userId,
+        sender: req.user.id,
+        blog: blog._id,
+        type: "tag",
+      }));
+      await Notification.insertMany(notifications);
+    }
+
+    const populatedBlog = await Blog.findById(blog._id)
+      .populate("author")
+      .populate("taggedUsers", "name email profileImage")
+      .populate("comments.user", "name email profileImage");
 
     res.status(200).json({
       success: true,
-      blog: updatedBlog,
+      blog: populatedBlog,
     });
   } catch (error) {
     res.status(500).json({
@@ -274,6 +309,34 @@ export const deleteComment = async (req, res) => {
       comments: blog.comments,
       message: "Comment deleted successfully",
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get Blogs by User
+export const getBlogsByUser = async (req, res) => {
+  try {
+    const blogs = await Blog.find({ author: req.params.userId })
+      .populate("author")
+      .populate("taggedUsers", "name email profileImage")
+      .populate("comments.user", "name email profileImage")
+      .sort({ createdAt: -1 });
+    res.status(200).json({ success: true, blogs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get Blogs where User is Tagged
+export const getBlogsByTaggedUser = async (req, res) => {
+  try {
+    const blogs = await Blog.find({ taggedUsers: req.params.userId })
+      .populate("author")
+      .populate("taggedUsers", "name email profileImage")
+      .populate("comments.user", "name email profileImage")
+      .sort({ createdAt: -1 });
+    res.status(200).json({ success: true, blogs });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

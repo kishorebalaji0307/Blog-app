@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { ProfileSkeleton } from "../component/SkeletonLoader";
 import "../Style/Profile.css";
 
 export default function Profile() {
   const [blogs, setBlogs] = useState([]);
+  const [taggedBlogs, setTaggedBlogs] = useState([]);
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("posts");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -15,31 +17,35 @@ export default function Profile() {
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) return;
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/users/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUser(res.data.user);
-      } catch (err) {
-        console.log(err);
-      }
-    };
+        const userData = res.data.user;
+        setUser(userData);
+        const userId = userData.id || userData._id;
 
-    const fetchBlogs = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/blogs`);
-        setBlogs(res.data.blogs || res.data);
+        const [userBlogsRes, taggedBlogsRes] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_API_URL}/blogs/user/${userId}`),
+          axios.get(`${import.meta.env.VITE_API_URL}/blogs/tagged/${userId}`)
+        ]);
+
+        setBlogs(userBlogsRes.data.blogs || []);
+        setTaggedBlogs(taggedBlogsRes.data.blogs || []);
       } catch (err) {
         console.log(err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProfileData();
-    fetchBlogs();
   }, []);
 
   const openEditModal = () => {
@@ -81,15 +87,18 @@ export default function Profile() {
     }
   };
 
-  // Filter blogs created by this user
-  const userBlogs = blogs.filter(blog => blog.author?.email === user?.email);
+  // blogs contains user blogs directly now via /blogs/user/:id
+  const userBlogs = blogs;
 
   return (
     <div className="app-container">
       <Sidebar />
 
       <main className="profile-content">
-        <div className="profile-container">
+        {isLoading ? (
+          <ProfileSkeleton />
+        ) : (
+          <div className="profile-container">
           {/* Profile Header */}
           <header className="profile-header">
             <div className="profile-avatar-container">
@@ -138,6 +147,12 @@ export default function Profile() {
             >
               SAVED
             </button>
+            <button
+              className={`profile-tab-btn ${activeTab === "tagged" ? "active" : ""}`}
+              onClick={() => setActiveTab("tagged")}
+            >
+              TAGGED
+            </button>
           </div>
 
           {/* Profile Posts Grid */}
@@ -163,7 +178,7 @@ export default function Profile() {
                   </Link>
                 ))
               )
-            ) : (
+            ) : activeTab === "saved" ? (
               (user?.savedBlogs || []).length === 0 ? (
                 <div className="no-posts-yet">
                   <h3>No Saved Posts Yet</h3>
@@ -184,9 +199,31 @@ export default function Profile() {
                   </Link>
                 ))
               )
+            ) : (
+              taggedBlogs.length === 0 ? (
+                <div className="no-posts-yet">
+                  <h3>No Tagged Posts Yet</h3>
+                </div>
+              ) : (
+                taggedBlogs.map((blog) => (
+                  <Link to={`/blog/${blog._id}`} className="grid-post-item" key={blog._id}>
+                    {blog.image ? (
+                      <img src={blog.image} alt="post" />
+                    ) : (
+                      <div className="no-image-placeholder">
+                        <span>{blog.title}</span>
+                      </div>
+                    )}
+                    <div className="grid-post-overlay">
+                      <span>{blog.title}</span>
+                    </div>
+                  </Link>
+                ))
+              )
             )}
           </div>
         </div>
+        )}
       </main>
 
       {/* Edit Profile Modal */}

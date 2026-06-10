@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../component/Sidebar";
 import { FiHeart, FiMessageCircle, FiSend, FiBookmark } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { PostSkeleton } from "../component/SkeletonLoader";
 import "../Style/Dashboard.css";
 
 const Dashboard = () => {
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -17,6 +21,8 @@ const Dashboard = () => {
         setBlogs(res.data.blogs || res.data);
       } catch (err) {
         console.log(err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -36,6 +42,17 @@ const Dashboard = () => {
 
     fetchBlogs();
     fetchUser();
+  }, []);
+
+  // Click outside to close options dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setActiveMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLike = async (blogId) => {
@@ -87,13 +104,58 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeletePost = async (blogId) => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${import.meta.env.VITE_API_URL}/blogs/${blogId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success("Blog deleted successfully 🚀");
+        setBlogs(prev => prev.filter(blog => blog._id !== blogId));
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to delete blog");
+      }
+    }
+  };
+
+  const handleShare = async (blog) => {
+    const shareUrl = `${window.location.origin}/blog/${blog._id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: blog.title,
+          text: blog.description.substring(0, 100),
+          url: shareUrl,
+        });
+        toast.success("Shared successfully 🚀");
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard! 📋");
+      } catch (err) {
+        toast.error("Failed to copy link");
+      }
+    }
+  };
+
   return (
     <div className="app-container">
       <Sidebar />
 
       <main className="main-content">
         <div className="feed-container">
-          {blogs.length === 0 ? (
+          {isLoading ? (
+            <>
+              <PostSkeleton />
+              <PostSkeleton />
+              <PostSkeleton />
+            </>
+          ) : blogs.length === 0 ? (
             <p className="no-blogs">No posts found 🚀</p>
           ) : (
             blogs.map((blog) => {
@@ -101,14 +163,22 @@ const Dashboard = () => {
               const isSaved = user && user.savedBlogs?.some(
                 (saved) => (typeof saved === "object" ? saved._id : saved) === blog._id
               );
+              const isAuthor = user && blog.author && (
+                (typeof blog.author === "object" ? blog.author._id : blog.author) === user._id
+              );
+              const isMenuOpen = activeMenuId === blog._id;
 
               return (
                 <article className="instagram-post" key={blog._id}>
                   {/* Post Header */}
-                  <header className="post-header">
+                  <header className="post-header" style={{ position: "relative" }}>
                     <div className="post-user-info">
                       <div className="user-avatar">
-                        {blog.author?.name ? blog.author.name[0].toUpperCase() : "U"}
+                        {blog.author?.profileImage ? (
+                          <img src={blog.author.profileImage} alt={blog.author.name} className="avatar-img" />
+                        ) : (
+                          blog.author?.name ? blog.author.name[0].toUpperCase() : "U"
+                        )}
                       </div>
                       <div>
                         <span className="post-username">
@@ -117,7 +187,32 @@ const Dashboard = () => {
                         <span className="post-location">Virtual Portal</span>
                       </div>
                     </div>
-                    <button className="post-options-btn">•••</button>
+                    {isAuthor && (
+                      <div className="post-menu-container" ref={isMenuOpen ? menuRef : null}>
+                        <button
+                          className="post-options-btn"
+                          onClick={() => setActiveMenuId(isMenuOpen ? null : blog._id)}
+                        >
+                          •••
+                        </button>
+                        {isMenuOpen && (
+                          <div className="dashboard-dropdown-menu">
+                            <Link to={`/edit-blog/${blog._id}`} className="dashboard-dropdown-item edit-option">
+                              Edit Post
+                            </Link>
+                            <button
+                              className="dashboard-dropdown-item delete-option"
+                              onClick={() => {
+                                handleDeletePost(blog._id);
+                                setActiveMenuId(null);
+                              }}
+                            >
+                              Delete Post
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </header>
 
                   {/* Post Image */}
@@ -143,7 +238,9 @@ const Dashboard = () => {
                       <Link to={`/blog/${blog._id}`} className="action-btn">
                         <FiMessageCircle size={24} />
                       </Link>
-                      <button className="action-btn"><FiSend size={24} /></button>
+                      <button className="action-btn" onClick={() => handleShare(blog)}>
+                        <FiSend size={24} />
+                      </button>
                     </div>
                     <button
                       onClick={() => handleSave(blog._id)}

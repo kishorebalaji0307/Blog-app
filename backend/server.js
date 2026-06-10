@@ -5,6 +5,7 @@ import connectDB from "./src/config/db.js";
 import uploadRoutes from "./src/routes/uploadRoutes.js";
 import blogRoutes from "./src/routes/blogRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
+import notificationRoutes from "./src/routes/notificationRoutes.js";
 
 const app = express();
 
@@ -50,10 +51,12 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET === "secretkey123") {
 app.use("/api/users", userRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use("/users", userRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/blogs", blogRoutes);
+app.use("/notifications", notificationRoutes);
 app.get("/", (req, res) => {
   res.send("Backend Running 🚀");
 });
