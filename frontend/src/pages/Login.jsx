@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import "../Style/Login.css";
 
 const Login = () => {
@@ -20,10 +21,10 @@ const Login = () => {
         });
 
         localStorage.setItem("token", res.data.token);
-        alert("Login Successful 🚀");
+        toast.success("Login Successful 🚀");
         navigate("/dashboard");
       } catch (err) {
-        alert(err.response?.data?.message || "Google Login Failed");
+        toast.error(err.response?.data?.message || "Google Login Failed");
       }
     };
 
@@ -71,10 +72,10 @@ const Login = () => {
       );
 
       localStorage.setItem("token", res.data.token);
-      alert("Login Successful 🚀");
+      toast.success("Login Successful 🚀");
       navigate("/dashboard");
     } catch (err) {
-      alert(err.response?.data?.message || "Login Failed");
+      toast.error(err.response?.data?.message || "Login Failed");
     }
   };
 

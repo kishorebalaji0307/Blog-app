@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 import Sidebar from "../component/Sidebar";
 import "../Style/CreateBlog.css";
 
@@ -93,20 +94,20 @@ const CreateBlog = () => {
           blogData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        alert("Blog updated successfully 🚀");
+        toast.success("Blog updated successfully 🚀");
       } else {
         await axios.post(
           `${import.meta.env.VITE_API_URL}/blogs`,
           blogData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        alert("Blog created successfully 🚀");
+        toast.success("Blog created successfully 🚀");
       }
 
       navigate("/dashboard");
     } catch (error) {
       console.log("Submit error:", error);
-      alert(id ? "Failed to update blog" : "Failed to create blog");
+      toast.error(id ? "Failed to update blog" : "Failed to create blog");
     } finally {
       setIsLoading(false);
     }
@@ -119,11 +120,11 @@ const CreateBlog = () => {
         await axios.delete(`${import.meta.env.VITE_API_URL}/blogs/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Blog deleted successfully 🚀");
+        toast.success("Blog deleted successfully 🚀");
         navigate("/profile");
       } catch (error) {
         console.log("Delete error:", error);
-        alert("Failed to delete blog");
+        toast.error("Failed to delete blog");
       }
     }
   };
@@ -203,7 +204,7 @@ const CreateBlog = () => {
               <div className="input-group">
                 <input
                   type="text"
-                  placeholder="Add category / tags..."
+                  placeholder="Tags..."
                   className="blog-input-clean"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}

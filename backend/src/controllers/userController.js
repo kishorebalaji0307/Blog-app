@@ -88,10 +88,17 @@ export const googleAuth = async (req, res) => {
     }
 
     const tokenInfo = await googleResponse.json();
-    const { email, name } = tokenInfo;
+    const { email, name, aud } = tokenInfo;
 
     if (!email) {
       return res.status(400).json({ message: "Invalid token payload: email is missing" });
+    }
+
+    // Verify token audience matches our Google Client ID to prevent token reuse attacks
+    const expectedClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID;
+    if (expectedClientId && aud !== expectedClientId) {
+      console.error(`Google Client ID mismatch: expected "${expectedClientId}", got "${aud}"`);
+      return res.status(400).json({ message: "Google token audience mismatch. Request denied." });
     }
 
     // Check if user exists

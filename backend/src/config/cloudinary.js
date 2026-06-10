@@ -1,8 +1,15 @@
 import { v2 as cloudinary } from "cloudinary";
 
-console.log("Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
-console.log("API Key:", process.env.CLOUDINARY_API_KEY);
-console.log("API Secret:", process.env.CLOUDINARY_API_SECRET);
+const isCloudinaryConfigured =
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET;
+
+if (!isCloudinaryConfigured) {
+  console.warn("WARNING: Cloudinary is not fully configured. Image uploads will fail.");
+} else {
+  console.log("Cloudinary configuration verified successfully.");
+}
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

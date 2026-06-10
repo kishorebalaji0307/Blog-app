@@ -2,11 +2,13 @@ import Sidebar from "../component/Sidebar";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 import "../Style/Profile.css";
 
 export default function Profile() {
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState("posts");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
@@ -56,9 +58,9 @@ export default function Profile() {
       );
       setUser(res.data.user);
       setIsEditModalOpen(false);
-      alert("Profile updated successfully 🚀");
+      toast.success("Profile updated successfully 🚀");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update profile");
+      toast.error(err.response?.data?.message || "Failed to update profile");
     } finally {
       setIsSaving(false);
     }
@@ -103,27 +105,66 @@ export default function Profile() {
             </section>
           </header>
 
+          {/* Profile Tabs */}
+          <div className="profile-tabs">
+            <button
+              className={`profile-tab-btn ${activeTab === "posts" ? "active" : ""}`}
+              onClick={() => setActiveTab("posts")}
+            >
+              POSTS
+            </button>
+            <button
+              className={`profile-tab-btn ${activeTab === "saved" ? "active" : ""}`}
+              onClick={() => setActiveTab("saved")}
+            >
+              SAVED
+            </button>
+          </div>
+
           {/* Profile Posts Grid */}
           <div className="profile-posts-grid">
-            {userBlogs.length === 0 ? (
-              <div className="no-posts-yet">
-                <h3>No Posts Yet</h3>
-              </div>
-            ) : (
-              userBlogs.map((blog) => (
-                <Link to={`/edit-blog/${blog._id}`} className="grid-post-item" key={blog._id}>
-                  {blog.image ? (
-                    <img src={blog.image} alt="post" />
-                  ) : (
-                    <div className="no-image-placeholder">
+            {activeTab === "posts" ? (
+              userBlogs.length === 0 ? (
+                <div className="no-posts-yet">
+                  <h3>No Posts Yet</h3>
+                </div>
+              ) : (
+                userBlogs.map((blog) => (
+                  <Link to={`/edit-blog/${blog._id}`} className="grid-post-item" key={blog._id}>
+                    {blog.image ? (
+                      <img src={blog.image} alt="post" />
+                    ) : (
+                      <div className="no-image-placeholder">
+                        <span>{blog.title}</span>
+                      </div>
+                    )}
+                    <div className="grid-post-overlay">
                       <span>{blog.title}</span>
                     </div>
-                  )}
-                  <div className="grid-post-overlay">
-                    <span>{blog.title}</span>
-                  </div>
-                </Link>
-              ))
+                  </Link>
+                ))
+              )
+            ) : (
+              (user?.savedBlogs || []).length === 0 ? (
+                <div className="no-posts-yet">
+                  <h3>No Saved Posts Yet</h3>
+                </div>
+              ) : (
+                user.savedBlogs.map((blog) => (
+                  <Link to={`/blog/${blog._id}`} className="grid-post-item" key={blog._id}>
+                    {blog.image ? (
+                      <img src={blog.image} alt="post" />
+                    ) : (
+                      <div className="no-image-placeholder">
+                        <span>{blog.title}</span>
+                      </div>
+                    )}
+                    <div className="grid-post-overlay">
+                      <span>{blog.title}</span>
+                    </div>
+                  </Link>
+                ))
+              )
             )}
           </div>
         </div>

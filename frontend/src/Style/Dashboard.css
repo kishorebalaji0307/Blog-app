@@ -234,3 +234,19 @@
     border-radius: 12px;
   }
 }
+
+.action-btn-heart.liked {
+  color: #ef4444;
+}
+
+.action-btn-heart.liked svg {
+  fill: #ef4444;
+}
+
+.action-btn.bookmark.bookmarked {
+  color: #eab308;
+}
+
+.action-btn.bookmark.bookmarked svg {
+  fill: #eab308;
+}

@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import "../Style/Register.css";
 
 const Register = () => {
@@ -20,10 +21,10 @@ const Register = () => {
         });
 
         localStorage.setItem("token", res.data.token);
-        alert("Registration Successful 🚀");
+        toast.success("Registration Successful 🚀");
         navigate("/dashboard");
       } catch (err) {
-        alert(err.response?.data?.message || "Google Registration Failed");
+        toast.error(err.response?.data?.message || "Google Registration Failed");
       }
     };
 
@@ -68,10 +69,10 @@ const Register = () => {
         password,
       });
 
-      alert("Registration Successful 🚀");
+      toast.success("Registration Successful 🚀");
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Registration Failed");
+      toast.error(err.response?.data?.message || "Registration Failed");
     }
   };
 

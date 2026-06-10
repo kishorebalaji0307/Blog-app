@@ -14,10 +14,23 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS
+// CORS Configuration
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(",").map(url => url.trim())
+  : ["http://localhost:5173", "http://127.0.0.1:5173"];
+
 app.use(
   cors({
-    origin: (origin, callback) => callback(null, true),
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, postman, or direct server calls)
+      if (!origin) return callback(null, true);
+      
+      const isAllowed = allowedOrigins.includes(origin);
+      if (isAllowed || process.env.NODE_ENV !== "production") {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -25,6 +38,13 @@ app.use(
 app.use(express.json());
 
 connectDB();
+
+// Validate critical environment keys
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET === "secretkey123") {
+  console.warn(
+    "⚠️ WARNING: JWT_SECRET is missing or using the default simple key. Please configure a unique, secure JWT_SECRET in production environments."
+  );
+}
 
 // Routes (supporting both /api prefix and non-prefix as fallback)
 app.use("/api/users", userRoutes);
@@ -43,4 +63,5 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Allowed CORS origins: ${allowedOrigins.join(", ")}`);
 });

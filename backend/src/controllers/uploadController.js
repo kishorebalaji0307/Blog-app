@@ -1,8 +1,8 @@
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
 export const uploadImage = async (req, res) => {
-  console.log("BODY =>", req.body);
-  console.log("FILE =>", req.file); 
+  // console.log("BODY =>", req.body);
+  // console.log("FILE =>", req.file); 
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -10,7 +10,6 @@ export const uploadImage = async (req, res) => {
         message: "No file uploaded",
       });
     }
-
     const uploadToCloudinary = () =>
       new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(

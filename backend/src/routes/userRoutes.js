@@ -18,7 +18,15 @@ router.post("/google-auth", googleAuth);
 
 router.get("/profile", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id)
+      .select("-password")
+      .populate({
+        path: "savedBlogs",
+        populate: {
+          path: "author",
+          select: "name email",
+        },
+      });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
