@@ -185,7 +185,11 @@ const CreateBlog = () => {
               {/* User profile header inside creator (Instagram style) */}
               <div className="author-header">
                 <div className="author-avatar">
-                  {user?.name ? user.name[0].toUpperCase() : "U"}
+                  {user?.profileImage ? (
+                    <img src={user.profileImage} alt={user.name} className="avatar-img" />
+                  ) : (
+                    user?.name ? user.name[0].toUpperCase() : "U"
+                  )}
                 </div>
                 <span className="author-name">{user?.name || "User"}</span>
               </div>

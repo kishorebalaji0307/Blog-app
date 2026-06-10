@@ -17,7 +17,7 @@ app.use((req, res, next) => {
 // CORS Configuration
 const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(",").map(url => url.trim())
-  : ["http://localhost:5173", "http://127.0.0.1:5173"];
+  : ["http://localhost:5173", "http://127.0.0.1:5173","https://blog-app-theta-silk-21.vercel.app","*"];
 
 app.use(
   cors({
@@ -54,7 +54,6 @@ app.use("/api/blogs", blogRoutes);
 app.use("/users", userRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/blogs", blogRoutes);
-
 app.get("/", (req, res) => {
   res.send("Backend Running 🚀");
 });

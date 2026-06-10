@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiHome, FiPlusSquare, FiUser, FiLogOut } from "react-icons/fi";
+import toast from "react-hot-toast";
 import "./Sidebar.css";
 
 const Sidebar = () => {
@@ -7,8 +8,11 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+    if (window.confirm("Are you sure you want to log out?")) {
+      localStorage.removeItem("token");
+      toast.success("Logged out successfully 🚀");
+      navigate("/");
+    }
   };
 
   return (

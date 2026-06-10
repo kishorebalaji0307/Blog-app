@@ -80,11 +80,7 @@ export const getSingleBlog = async (req, res) => {
 // Update Blog
 export const updateBlog = async (req, res) => {
   try {
-    const blog = await Blog.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const blog = await Blog.findById(req.params.id);
 
     if (!blog) {
       return res.status(404).json({
@@ -93,9 +89,23 @@ export const updateBlog = async (req, res) => {
       });
     }
 
+    // Check if user is the author of this blog
+    if (blog.author.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this blog",
+      });
+    }
+
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
     res.status(200).json({
       success: true,
-      blog,
+      blog: updatedBlog,
     });
   } catch (error) {
     res.status(500).json({
@@ -108,7 +118,7 @@ export const updateBlog = async (req, res) => {
 // Delete Blog
 export const deleteBlog = async (req, res) => {
   try {
-    const blog = await Blog.findByIdAndDelete(req.params.id);
+    const blog = await Blog.findById(req.params.id);
 
     if (!blog) {
       return res.status(404).json({
@@ -116,6 +126,16 @@ export const deleteBlog = async (req, res) => {
         message: "Blog not found",
       });
     }
+
+    // Check if user is the author of this blog
+    if (blog.author.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this blog",
+      });
+    }
+
+    await Blog.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,

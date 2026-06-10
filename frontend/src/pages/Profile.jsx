@@ -12,6 +12,8 @@ export default function Profile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
+  const [profileImageUrl, setProfileImageUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -43,6 +45,8 @@ export default function Profile() {
   const openEditModal = () => {
     setEditName(user?.name || "");
     setEditBio(user?.bio || "");
+    setProfileImageUrl(user?.profileImage || "");
+    setProfileImage(null);
     setIsEditModalOpen(true);
   };
 
@@ -50,10 +54,21 @@ export default function Profile() {
     e.preventDefault();
     setIsSaving(true);
     try {
+      let finalProfileImage = profileImageUrl;
+      if (profileImage) {
+        const formData = new FormData();
+        formData.append("image", profileImage);
+        const { data } = await axios.post(
+          `${import.meta.env.VITE_API_URL}/upload`,
+          formData
+        );
+        finalProfileImage = data.imageUrl;
+      }
+
       const token = localStorage.getItem("token");
       const res = await axios.put(
         `${import.meta.env.VITE_API_URL}/users/profile`,
-        { name: editName, bio: editBio },
+        { name: editName, bio: editBio, profileImage: finalProfileImage },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUser(res.data.user);
@@ -79,7 +94,11 @@ export default function Profile() {
           <header className="profile-header">
             <div className="profile-avatar-container">
               <div className="profile-avatar">
-                {user?.name ? user.name[0].toUpperCase() : "U"}
+                {user?.profileImage ? (
+                  <img src={user.profileImage} alt={user.name} className="avatar-img" />
+                ) : (
+                  user?.name ? user.name[0].toUpperCase() : "U"
+                )}
               </div>
             </div>
 
@@ -176,6 +195,37 @@ export default function Profile() {
           <div className="edit-profile-modal">
             <h3>Edit Profile</h3>
             <form onSubmit={handleSaveProfile}>
+              <div className="form-group avatar-upload-group">
+                <label>Profile Picture</label>
+                <div className="avatar-upload-preview-container">
+                  <div className="avatar-upload-preview">
+                    {profileImage ? (
+                      <img src={URL.createObjectURL(profileImage)} alt="Preview" />
+                    ) : profileImageUrl ? (
+                      <img src={profileImageUrl} alt="Current" />
+                    ) : (
+                      <div className="avatar-initial">
+                        {editName ? editName[0].toUpperCase() : "U"}
+                      </div>
+                    )}
+                  </div>
+                  <label htmlFor="avatar-file-upload" className="change-avatar-btn">
+                    Change Photo
+                  </label>
+                  <input
+                    id="avatar-file-upload"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setProfileImage(file);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
               <div className="form-group">
                 <label>Name</label>
                 <input

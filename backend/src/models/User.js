@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema(
       default: "Welcome to my Bloggram profile! Exploring the virtual space one post at a time. 🚀",
       maxlength: 150,
     },
+    profileImage: {
+      type: String,
+      default: "",
+    },
     savedBlogs: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Sidebar from "../component/Sidebar";
-import { FiHeart, FiBookmark, FiMessageCircle, FiChevronLeft } from "react-icons/fi";
+import { FiHeart, FiBookmark, FiMessageCircle, FiChevronLeft, FiMoreVertical, FiShare2 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import "../Style/BlogDetails.css";
 
@@ -121,6 +121,66 @@ export default function BlogDetails() {
     }
   };
 
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
+
+  const handleEdit = () => {
+    navigate(`/edit-blog/${id}`);
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${import.meta.env.VITE_API_URL}/blogs/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Blog deleted successfully 🚀");
+        navigate("/dashboard");
+      } catch (err) {
+        console.error("Delete error:", err);
+        toast.error(err.response?.data?.message || "Failed to delete blog");
+      }
+    }
+  };
+
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: blog?.title || "Blog Post",
+          text: blog?.description?.substring(0, 100) || "Check out this blog post!",
+          url: shareUrl,
+        });
+        toast.success("Shared successfully 🚀");
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard! 📋");
+      } catch (err) {
+        toast.error("Failed to copy link");
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="blog-details-container">
@@ -156,6 +216,10 @@ export default function BlogDetails() {
     (saved) => (typeof saved === "object" ? saved._id : saved) === id
   );
 
+  const isAuthor = user && blog && blog.author && (
+    (typeof blog.author === "object" ? blog.author._id : blog.author) === user._id
+  );
+
   return (
     <div className="blog-details-container">
       <Sidebar />
@@ -169,16 +233,43 @@ export default function BlogDetails() {
             </button>
             <div className="blog-author-info">
               <div className="author-avatar">
-                {blog.author?.name ? blog.author.name[0].toUpperCase() : "U"}
+                {blog.author?.profileImage ? (
+                  <img src={blog.author.profileImage} alt={blog.author.name} className="avatar-img" />
+                ) : (
+                  blog.author?.name ? blog.author.name[0].toUpperCase() : "U"
+                )}
               </div>
               <div className="author-meta">
                 <h4>{blog.author?.name || "anonymous"}</h4>
                 <p>Virtual Portal</p>
               </div>
             </div>
-            <span className="blog-date">
-              {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : "Just now"}
-            </span>
+            <div className="blog-details-header-right">
+              <span className="blog-date">
+                {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : "Just now"}
+              </span>
+              {isAuthor && (
+                <div className="blog-menu-container" ref={menuRef}>
+                  <button
+                    className="blog-menu-trigger"
+                    onClick={() => setShowMenu((prev) => !prev)}
+                    aria-label="Options"
+                  >
+                    <FiMoreVertical size={20} />
+                  </button>
+                  {showMenu && (
+                    <div className="blog-dropdown-menu">
+                      <button className="blog-dropdown-item edit-option" onClick={handleEdit}>
+                        Edit Post
+                      </button>
+                      <button className="blog-dropdown-item delete-option" onClick={handleDelete}>
+                        Delete Post
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </header>
 
           {/* Title */}
@@ -209,6 +300,14 @@ export default function BlogDetails() {
                 <FiMessageCircle size={22} />
                 <span>{blog.comments?.length || 0} Comments</span>
               </div>
+
+              <button
+                onClick={handleShare}
+                className="interaction-btn share-btn"
+              >
+                <FiShare2 size={22} />
+                <span>Share</span>
+              </button>
             </div>
 
             <button
@@ -231,7 +330,11 @@ export default function BlogDetails() {
                 blog.comments.map((comment) => (
                   <div className="comment-card" key={comment._id}>
                     <div className="comment-avatar">
-                      {comment.user?.name ? comment.user.name[0].toUpperCase() : "U"}
+                      {comment.user?.profileImage ? (
+                        <img src={comment.user.profileImage} alt={comment.user.name} className="avatar-img" />
+                      ) : (
+                        comment.user?.name ? comment.user.name[0].toUpperCase() : "U"
+                      )}
                     </div>
                     <div className="comment-body">
                       <div className="comment-header">

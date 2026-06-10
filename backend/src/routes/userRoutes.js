@@ -24,7 +24,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
         path: "savedBlogs",
         populate: {
           path: "author",
-          select: "name email",
+          select: "name email profileImage",
         },
       });
     if (!user) {
@@ -41,16 +41,25 @@ router.get("/profile", authMiddleware, async (req, res) => {
 
 router.put("/profile", authMiddleware, async (req, res) => {
   try {
-    const { name, bio } = req.body;
+    const { name, bio, profileImage } = req.body;
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
     if (name) user.name = name;
     if (bio !== undefined) user.bio = bio;
+    if (profileImage !== undefined) user.profileImage = profileImage;
     await user.save();
 
-    const updatedUser = await User.findById(req.user.id).select("-password");
+    const updatedUser = await User.findById(req.user.id)
+      .select("-password")
+      .populate({
+        path: "savedBlogs",
+        populate: {
+          path: "author",
+          select: "name email profileImage",
+        },
+      });
     res.json({
       success: true,
       message: "Profile updated successfully",
