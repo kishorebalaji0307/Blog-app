@@ -78,27 +78,42 @@ export const googleAuth = async (req, res) => {
       return res.status(400).json({ message: "ID Token is required" });
     }
 
-    // Verify token using Google's OAuth2 API (Token Info endpoint)
-    const googleResponse = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
-    );
+    let email, name;
 
-    if (!googleResponse.ok) {
-      return res.status(400).json({ message: "Failed to verify Google ID token" });
-    }
+    // Check if it's a mock token for local development/demo
+    if (idToken.startsWith("mock-google-token-")) {
+      if (process.env.NODE_ENV === "production") {
+        return res.status(400).json({ message: "Mock Google Login is disabled in production" });
+      }
+      // Format: mock-google-token-email-name
+      const parts = idToken.split("-");
+      email = parts[3] ? decodeURIComponent(parts[3]) : "mockuser@example.com";
+      name = parts[4] ? decodeURIComponent(parts[4]) : "Mock User";
+    } else {
+      // Verify token using Google's OAuth2 API (Token Info endpoint)
+      const googleResponse = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
+      );
 
-    const tokenInfo = await googleResponse.json();
-    const { email, name, aud } = tokenInfo;
+      if (!googleResponse.ok) {
+        return res.status(400).json({ message: "Failed to verify Google ID token" });
+      }
 
-    if (!email) {
-      return res.status(400).json({ message: "Invalid token payload: email is missing" });
-    }
+      const tokenInfo = await googleResponse.json();
+      const { email: googleEmail, name: googleName, aud } = tokenInfo;
+      email = googleEmail;
+      name = googleName;
 
-    // Verify token audience matches our Google Client ID to prevent token reuse attacks
-    const expectedClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID;
-    if (expectedClientId && aud !== expectedClientId) {
-      console.error(`Google Client ID mismatch: expected "${expectedClientId}", got "${aud}"`);
-      return res.status(400).json({ message: "Google token audience mismatch. Request denied." });
+      if (!email) {
+        return res.status(400).json({ message: "Invalid token payload: email is missing" });
+      }
+
+      // Verify token audience matches our Google Client ID to prevent token reuse attacks
+      const expectedClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID;
+      if (expectedClientId && aud !== expectedClientId) {
+        console.error(`Google Client ID mismatch: expected "${expectedClientId}", got "${aud}"`);
+        return res.status(400).json({ message: "Google token audience mismatch. Request denied." });
+      }
     }
 
     // Check if user exists
