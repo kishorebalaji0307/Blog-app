@@ -10,6 +10,7 @@ import {
   saveBlog,
   addComment,
   deleteComment,
+  updateComment,
   getBlogsByUser,
   getBlogsByTaggedUser,
 } from "../controllers/blogController.js";
@@ -49,5 +50,8 @@ router.post("/:id/comments", authMiddleware, addComment);
 
 // Delete Comment (Requires Auth)
 router.delete("/:id/comments/:commentId", authMiddleware, deleteComment);
+
+// Update Comment (Requires Auth)
+router.put("/:id/comments/:commentId", authMiddleware, updateComment);
 
 export default router;

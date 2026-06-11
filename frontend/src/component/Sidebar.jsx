@@ -3,6 +3,7 @@ import { FiHome, FiPlusSquare, FiUser, FiLogOut, FiSun, FiMoon, FiBell, FiSearch
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import logoImg from "../assets/logo.png";
 import "./Sidebar.css";
 
 const Sidebar = () => {
@@ -205,8 +206,9 @@ const Sidebar = () => {
 
       {/* Mobile Top Header */}
       <header className="mobile-header">
-        <Link to="/dashboard" className="app-logo" style={{ textDecoration: "none", marginRight: "10px" }}>
-          Bloggram
+        <Link to="/dashboard" className="app-logo" style={{ textDecoration: "none", marginRight: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
+          <img src={logoImg} alt="logo" style={{ width: "24px", height: "24px", objectFit: "contain" }} />
+          <span style={{ fontSize: "1.25rem", fontWeight: 800 }}>Connectify</span>
         </Link>
         
         <div className="search-container mobile-search" ref={mobileSearchRef}>
@@ -335,7 +337,10 @@ const Sidebar = () => {
 
       {/* Desktop Sidebar */}
       <aside className="sidebar">
-        <h2 className="app-logo">Bloggram</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingLeft: "16px", marginBottom: "40px" }}>
+          <img src={logoImg} alt="logo" style={{ width: "36px", height: "36px", objectFit: "contain" }} />
+          <span style={{ fontSize: "1.7rem", fontWeight: 800, fontFamily: "'Outfit', sans-serif", background: "var(--accent-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Connectify</span>
+        </div>
         <nav className="sidebar-nav">
           <Link
             to="/dashboard"

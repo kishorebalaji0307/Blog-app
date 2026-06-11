@@ -314,6 +314,46 @@ export const deleteComment = async (req, res) => {
   }
 };
 
+// Update Comment on Blog
+export const updateComment = async (req, res) => {
+  try {
+    const { id, commentId } = req.params;
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ success: false, message: "Comment text is required" });
+    }
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "Blog not found" });
+    }
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ success: false, message: "Comment not found" });
+    }
+
+    const isCommenter = comment.user.toString() === req.user.id;
+    if (!isCommenter) {
+      return res.status(403).json({ success: false, message: "Not authorized to edit this comment" });
+    }
+
+    comment.text = text;
+    await blog.save();
+
+    const updatedBlog = await Blog.findById(id)
+      .populate("comments.user", "name email profileImage");
+
+    res.status(200).json({
+      success: true,
+      comments: updatedBlog.comments,
+      message: "Comment updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // Get Blogs by User
 export const getBlogsByUser = async (req, res) => {
   try {

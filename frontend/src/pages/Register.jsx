@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import logoImg from "../assets/logo.png";
 import "../Style/Register.css";
 
 const Register = () => {
@@ -79,11 +80,11 @@ const Register = () => {
   return (
     <div className="register-container">
       <div className="register-card">
-        <h1 className="register-title">Bloggram</h1>
-
-        <p className="register-subtitle">
-          Sign up to see photos and posts from your virtual friends.
-        </p>
+        <div className="logo-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
+          <img src={logoImg} alt="Connectify Logo" style={{ width: "80px", height: "80px", objectFit: "contain" }} />
+          <h1 className="register-title" style={{ margin: 0, fontSize: "2.4rem", fontFamily: "'Outfit', sans-serif", fontWeight: 800, background: "var(--accent-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Connectify</h1>
+          <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--text-muted)", fontWeight: 500, letterSpacing: "0.2px" }}>Share Stories. Build Connections.</p>
+        </div>
 
         <div id="google-signin-btn"></div>
 

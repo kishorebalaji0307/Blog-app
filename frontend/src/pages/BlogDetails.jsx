@@ -15,6 +15,8 @@ export default function BlogDetails() {
   const [commentText, setCommentText] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editingCommentText, setEditingCommentText] = useState("");
 
   useEffect(() => {
     const fetchBlogAndUser = async () => {
@@ -119,6 +121,49 @@ export default function BlogDetails() {
       toast.error(err.response?.data?.message || "Failed to add comment");
     } finally {
       setIsSubmittingComment(false);
+    }
+  };
+
+  const handleCommentDelete = async (commentId) => {
+    if (window.confirm("Are you sure you want to delete this comment? 🗑️")) {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.delete(
+          `${import.meta.env.VITE_API_URL}/blogs/${id}/comments/${commentId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setBlog((prev) => ({
+          ...prev,
+          comments: res.data.comments,
+        }));
+        toast.success("Comment deleted successfully 🚀");
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to delete comment");
+      }
+    }
+  };
+
+  const handleCommentEditSubmit = async (e, commentId) => {
+    e.preventDefault();
+    if (!editingCommentText.trim()) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/blogs/${id}/comments/${commentId}`,
+        { text: editingCommentText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setBlog((prev) => ({
+        ...prev,
+        comments: res.data.comments,
+      }));
+      setEditingCommentId(null);
+      toast.success("Comment updated successfully 🚀");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update comment");
     }
   };
 
@@ -345,28 +390,87 @@ export default function BlogDetails() {
               {!blog.comments || blog.comments.length === 0 ? (
                 <p className="no-comments-prompt">No comments yet. Be the first to start the conversation! 💬</p>
               ) : (
-                blog.comments.map((comment) => (
-                  <div className="comment-card" key={comment._id}>
-                    <Link to={`/profile/${comment.user?._id || comment.user?.id}`} className="comment-avatar" style={{ textDecoration: "none" }}>
-                      {comment.user?.profileImage ? (
-                        <img src={comment.user.profileImage} alt={comment.user.name} className="avatar-img" />
-                      ) : (
-                        comment.user?.name ? comment.user.name[0].toUpperCase() : "U"
-                      )}
-                    </Link>
-                    <div className="comment-body">
-                      <div className="comment-header">
-                        <Link to={`/profile/${comment.user?._id || comment.user?.id}`} className="comment-username" style={{ textDecoration: "none", fontWeight: 600 }}>
-                          {comment.user?.name || "anonymous"}
-                        </Link>
-                        <span className="comment-time">
-                          {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : "Just now"}
-                        </span>
+                blog.comments.map((comment) => {
+                  const isCommentOwner = user && comment.user && (
+                    (comment.user._id || comment.user) === user._id
+                  );
+                  const isBlogOwner = user && blog.author && (
+                    (blog.author._id || blog.author) === user._id
+                  );
+                  const canDelete = isCommentOwner || isBlogOwner;
+                  const isEditing = editingCommentId === comment._id;
+
+                  return (
+                    <div className="comment-card" key={comment._id}>
+                      <Link to={`/profile/${comment.user?._id || comment.user?.id}`} className="comment-avatar" style={{ textDecoration: "none" }}>
+                        {comment.user?.profileImage ? (
+                          <img src={comment.user.profileImage} alt={comment.user.name} className="avatar-img" />
+                        ) : (
+                          comment.user?.name ? comment.user.name[0].toUpperCase() : "U"
+                        )}
+                      </Link>
+                      <div className="comment-body">
+                        <div className="comment-header">
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <Link to={`/profile/${comment.user?._id || comment.user?.id}`} className="comment-username" style={{ textDecoration: "none", fontWeight: 600 }}>
+                              {comment.user?.name || "anonymous"}
+                            </Link>
+                            <span className="comment-time">
+                              {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : "Just now"}
+                            </span>
+                          </div>
+                          
+                          <div className="comment-actions">
+                            {!isEditing && isCommentOwner && (
+                              <button
+                                className="comment-action-btn edit-comment-btn"
+                                onClick={() => {
+                                  setEditingCommentId(comment._id);
+                                  setEditingCommentText(comment.text);
+                                }}
+                              >
+                                Edit
+                              </button>
+                            )}
+                            {!isEditing && canDelete && (
+                              <button
+                                className="comment-action-btn delete-comment-btn"
+                                onClick={() => handleCommentDelete(comment._id)}
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        {isEditing ? (
+                          <form onSubmit={(e) => handleCommentEditSubmit(e, comment._id)} className="comment-edit-form" style={{ marginTop: "6px" }}>
+                            <input
+                              type="text"
+                              value={editingCommentText}
+                              onChange={(e) => setEditingCommentText(e.target.value)}
+                              className="comment-edit-input"
+                              maxLength={500}
+                              required
+                              autoFocus
+                            />
+                            <div className="comment-edit-actions" style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "6px" }}>
+                              <button type="submit" className="comment-edit-save-btn">Save</button>
+                              <button
+                                type="button"
+                                className="comment-edit-cancel-btn"
+                                onClick={() => setEditingCommentId(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <p className="comment-text">{comment.text}</p>
+                        )}
                       </div>
-                      <p className="comment-text">{comment.text}</p>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 

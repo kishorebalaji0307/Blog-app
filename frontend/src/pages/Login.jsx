@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import logoImg from "../assets/logo.png";
 import "../Style/Login.css";
 
 const Login = () => {
@@ -82,9 +83,11 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1 className="login-title">Bloggram</h1>
-
-        <p className="login-subtitle">Welcome Back 👋</p>
+        <div className="logo-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
+          <img src={logoImg} alt="Connectify Logo" style={{ width: "80px", height: "80px", objectFit: "contain" }} />
+          <h1 className="login-title" style={{ margin: 0, fontSize: "2.4rem", fontFamily: "'Outfit', sans-serif", fontWeight: 800, background: "var(--accent-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Connectify</h1>
+          <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--text-muted)", fontWeight: 500, letterSpacing: "0.2px" }}>Share Stories. Build Connections.</p>
+        </div>
 
         <form className="login-form" onSubmit={handleLogin}>
           <input
