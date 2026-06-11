@@ -10,29 +10,8 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
-  const [showMockGoogle, setShowMockGoogle] = useState(false);
-  const [mockName, setMockName] = useState("");
-  const [mockEmail, setMockEmail] = useState("");
 
   const navigate = useNavigate();
-
-  const handleMockGoogleSubmit = async (e) => {
-    e.preventDefault();
-    if (!mockEmail.trim()) return;
-    try {
-      const mockToken = `mock-google-token-email-${encodeURIComponent(mockEmail)}-${encodeURIComponent(mockName)}`;
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/users/google-auth`, {
-        idToken: mockToken,
-      });
-
-      localStorage.setItem("token", res.data.token);
-      toast.success("Login Successful 🚀");
-      navigate("/dashboard");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Google Login Failed");
-    }
-  };
 
   useEffect(() => {
     const handleGoogleResponse = async (response) => {
@@ -144,15 +123,6 @@ const Login = () => {
         </div>
 
         <div id="google-signin-btn"></div>
-        <div style={{ textAlign: "center", marginTop: "10px" }}>
-          <button
-            type="button"
-            className="mock-google-trigger-link"
-            onClick={() => setShowMockGoogle(true)}
-          >
-            Google Sign-in Issue? Use Local Mock Login
-          </button>
-        </div>
       </div>
 
       <div className="register-box">
@@ -163,49 +133,6 @@ const Login = () => {
           </Link>
         </p>
       </div>
-
-      {showMockGoogle && (
-        <div className="mock-google-modal-overlay">
-          <div className="mock-google-modal">
-            <h3>Simulated Google Sign In</h3>
-            <p>Use this option to bypass Google OAuth restrictions during local testing.</p>
-            <form onSubmit={handleMockGoogleSubmit}>
-              <div className="form-group">
-                <label>Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. John Doe"
-                  value={mockName}
-                  onChange={(e) => setMockName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  placeholder="e.g. john@example.com"
-                  value={mockEmail}
-                  onChange={(e) => setMockEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => setShowMockGoogle(false)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="simulate-btn">
-                  Simulate Sign In
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

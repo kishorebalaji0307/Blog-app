@@ -172,7 +172,7 @@ const Dashboard = () => {
                 <article className="instagram-post" key={blog._id}>
                   {/* Post Header */}
                   <header className="post-header" style={{ position: "relative" }}>
-                    <div className="post-user-info">
+                    <Link to={`/profile/${blog.author?._id || blog.author?.id}`} className="post-user-info" style={{ textDecoration: "none" }}>
                       <div className="user-avatar">
                         {blog.author?.profileImage ? (
                           <img src={blog.author.profileImage} alt={blog.author.name} className="avatar-img" />
@@ -186,7 +186,7 @@ const Dashboard = () => {
                         </span>
                         <span className="post-location">Virtual Portal</span>
                       </div>
-                    </div>
+                    </Link>
                     {isAuthor && (
                       <div className="post-menu-container" ref={isMenuOpen ? menuRef : null}>
                         <button
@@ -262,9 +262,9 @@ const Dashboard = () => {
                       </span>
                     </div>
                     <div className="post-caption">
-                      <span className="caption-username">
+                      <Link to={`/profile/${blog.author?._id || blog.author?.id}`} className="caption-username" style={{ textDecoration: "none" }}>
                         {blog.author?.name || "anonymous"}
-                      </span>
+                      </Link>
                       <span className="caption-text">
                         <b>{blog.title}</b> — {blog.description}
                       </span>

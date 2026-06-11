@@ -7,7 +7,8 @@
 
 .blog-details-content {
   flex-grow: 1;
-  padding: 40px 20px;
+  margin-left: 240px; /* aligns with desktop sidebar width */
+  padding: 110px 20px 60px 20px; /* offset for desktop top header */
   display: flex;
   justify-content: center;
 }
@@ -443,4 +444,11 @@
   font-size: 0.8rem;
   font-weight: 600;
   border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+@media (max-width: 768px) {
+  .blog-details-content {
+    margin-left: 0;
+    padding: 76px 12px 76px 12px;
+  }
 }

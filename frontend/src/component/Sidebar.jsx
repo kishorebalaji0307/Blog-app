@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FiHome, FiPlusSquare, FiUser, FiLogOut, FiSun, FiMoon, FiBell } from "react-icons/fi";
+import { FiHome, FiPlusSquare, FiUser, FiLogOut, FiSun, FiMoon, FiBell, FiSearch } from "react-icons/fi";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -13,6 +13,49 @@ const Sidebar = () => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef(null);
+
+  // Search States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const desktopSearchRef = useRef(null);
+  const mobileSearchRef = useRef(null);
+
+  // Debounced User Search
+  useEffect(() => {
+    const handleSearch = async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        return;
+      }
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/users/search?q=${searchQuery}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSearchResults(res.data.users || []);
+      } catch (err) {
+        console.error("Search failed:", err);
+      }
+    };
+
+    const delayDebounce = setTimeout(handleSearch, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+
+  // Click Outside Search Dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const clickedOutsideDesktop = !desktopSearchRef.current || !desktopSearchRef.current.contains(event.target);
+      const clickedOutsideMobile = !mobileSearchRef.current || !mobileSearchRef.current.contains(event.target);
+      if (clickedOutsideDesktop && clickedOutsideMobile) {
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -103,9 +146,123 @@ const Sidebar = () => {
 
   return (
     <>
+      {/* Desktop Top Header / Search Bar */}
+      <header className="desktop-header">
+        <div className="search-container" ref={desktopSearchRef}>
+          <div className="search-input-wrapper">
+            <FiSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSearchDropdown(true);
+              }}
+              onFocus={() => setShowSearchDropdown(true)}
+            />
+            {searchQuery && (
+              <button className="clear-search-btn" onClick={() => setSearchQuery("")}>
+                &times;
+              </button>
+            )}
+          </div>
+
+          {showSearchDropdown && searchResults.length > 0 && (
+            <div className="search-dropdown">
+              {searchResults.map((u) => (
+                <Link
+                  key={u._id}
+                  to={`/profile/${u._id}`}
+                  className="search-result-item"
+                  onClick={() => {
+                    setShowSearchDropdown(false);
+                    setSearchQuery("");
+                  }}
+                >
+                  <div className="result-avatar">
+                    {u.profileImage ? (
+                      <img src={u.profileImage} alt={u.name} />
+                    ) : (
+                      u.name ? u.name[0].toUpperCase() : "U"
+                    )}
+                  </div>
+                  <div className="result-info">
+                    <span className="result-name">{u.name}</span>
+                    <span className="result-email">{u.email}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          {showSearchDropdown && searchQuery.trim() && searchResults.length === 0 && (
+            <div className="search-dropdown no-results">
+              No users found 🔍
+            </div>
+          )}
+        </div>
+      </header>
+
       {/* Mobile Top Header */}
       <header className="mobile-header">
-        <h2 className="app-logo">Bloggram</h2>
+        <Link to="/dashboard" className="app-logo" style={{ textDecoration: "none", marginRight: "10px" }}>
+          Bloggram
+        </Link>
+        
+        <div className="search-container mobile-search" ref={mobileSearchRef}>
+          <div className="search-input-wrapper">
+            <FiSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSearchDropdown(true);
+              }}
+              onFocus={() => setShowSearchDropdown(true)}
+            />
+            {searchQuery && (
+              <button className="clear-search-btn" onClick={() => setSearchQuery("")}>
+                &times;
+              </button>
+            )}
+          </div>
+
+          {showSearchDropdown && searchResults.length > 0 && (
+            <div className="search-dropdown">
+              {searchResults.map((u) => (
+                <Link
+                  key={u._id}
+                  to={`/profile/${u._id}`}
+                  className="search-result-item"
+                  onClick={() => {
+                    setShowSearchDropdown(false);
+                    setSearchQuery("");
+                  }}
+                >
+                  <div className="result-avatar">
+                    {u.profileImage ? (
+                      <img src={u.profileImage} alt={u.name} />
+                    ) : (
+                      u.name ? u.name[0].toUpperCase() : "U"
+                    )}
+                  </div>
+                  <div className="result-info">
+                    <span className="result-name">{u.name}</span>
+                    <span className="result-email">{u.email}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          {showSearchDropdown && searchQuery.trim() && searchResults.length === 0 && (
+            <div className="search-dropdown no-results">
+              No users found 🔍
+            </div>
+          )}
+        </div>
+
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           {/* Mobile Notification bell */}
           <div style={{ position: "relative" }} ref={notificationRef}>
@@ -137,16 +294,27 @@ const Sidebar = () => {
                         className={`notification-item ${notif.read ? "read" : "unread"}`}
                         onClick={() => handleMarkAsRead(notif._id, notif.blog?._id)}
                       >
-                        <div className="notification-avatar">
+                        <Link
+                          to={`/profile/${notif.sender?._id}`}
+                          className="notification-avatar"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           {notif.sender?.profileImage ? (
                             <img src={notif.sender.profileImage} alt={notif.sender.name} className="avatar-img" />
                           ) : (
                             notif.sender?.name ? notif.sender.name[0].toUpperCase() : "U"
                           )}
-                        </div>
+                        </Link>
                         <div className="notification-item-content">
                           <p>
-                            <b>{notif.sender?.name || "Someone"}</b> tagged you in post: "<i>{notif.blog?.title}</i>"
+                            <Link
+                              to={`/profile/${notif.sender?._id}`}
+                              style={{ textDecoration: "none", color: "inherit" }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <b>{notif.sender?.name || "Someone"}</b>
+                            </Link>{" "}
+                            tagged you in post: "<i>{notif.blog?.title}</i>"
                           </p>
                           <span className="notification-time">
                             {new Date(notif.createdAt).toLocaleDateString()}
@@ -224,16 +392,27 @@ const Sidebar = () => {
                         className={`notification-item ${notif.read ? "read" : "unread"}`}
                         onClick={() => handleMarkAsRead(notif._id, notif.blog?._id)}
                       >
-                        <div className="notification-avatar">
+                        <Link
+                          to={`/profile/${notif.sender?._id}`}
+                          className="notification-avatar"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           {notif.sender?.profileImage ? (
                             <img src={notif.sender.profileImage} alt={notif.sender.name} className="avatar-img" />
                           ) : (
                             notif.sender?.name ? notif.sender.name[0].toUpperCase() : "U"
                           )}
-                        </div>
+                        </Link>
                         <div className="notification-item-content">
                           <p>
-                            <b>{notif.sender?.name || "Someone"}</b> tagged you in post: "<i>{notif.blog?.title}</i>"
+                            <Link
+                              to={`/profile/${notif.sender?._id}`}
+                              style={{ textDecoration: "none", color: "inherit" }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <b>{notif.sender?.name || "Someone"}</b>
+                            </Link>{" "}
+                            tagged you in post: "<i>{notif.blog?.title}</i>"
                           </p>
                           <span className="notification-time">
                             {new Date(notif.createdAt).toLocaleDateString()}

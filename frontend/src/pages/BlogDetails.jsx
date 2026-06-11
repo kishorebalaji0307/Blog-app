@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Sidebar from "../component/Sidebar";
@@ -230,7 +230,7 @@ export default function BlogDetails() {
             <button className="interaction-btn" style={{ paddingLeft: 0 }} onClick={() => navigate(-1)}>
               <FiChevronLeft size={20} /> Back
             </button>
-            <div className="blog-author-info">
+            <Link to={`/profile/${blog.author?._id || blog.author?.id}`} className="blog-author-info" style={{ textDecoration: "none" }}>
               <div className="author-avatar">
                 {blog.author?.profileImage ? (
                   <img src={blog.author.profileImage} alt={blog.author.name} className="avatar-img" />
@@ -239,10 +239,10 @@ export default function BlogDetails() {
                 )}
               </div>
               <div className="author-meta">
-                <h4>{blog.author?.name || "anonymous"}</h4>
+                <h4 style={{ margin: 0 }}>{blog.author?.name || "anonymous"}</h4>
                 <p>Virtual Portal</p>
               </div>
-            </div>
+            </Link>
             <div className="blog-details-header-right">
               <span className="blog-date">
                 {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : "Just now"}
@@ -290,9 +290,14 @@ export default function BlogDetails() {
               <span className="tagged-label">Tagged: </span>
               <div className="tagged-pills-container">
                 {blog.taggedUsers.map((taggedUser) => (
-                  <span className="tagged-user-pill-view" key={taggedUser._id}>
+                  <Link
+                    to={`/profile/${taggedUser._id}`}
+                    className="tagged-user-pill-view"
+                    key={taggedUser._id}
+                    style={{ textDecoration: "none" }}
+                  >
                     @{taggedUser.name}
-                  </span>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -342,18 +347,18 @@ export default function BlogDetails() {
               ) : (
                 blog.comments.map((comment) => (
                   <div className="comment-card" key={comment._id}>
-                    <div className="comment-avatar">
+                    <Link to={`/profile/${comment.user?._id || comment.user?.id}`} className="comment-avatar" style={{ textDecoration: "none" }}>
                       {comment.user?.profileImage ? (
                         <img src={comment.user.profileImage} alt={comment.user.name} className="avatar-img" />
                       ) : (
                         comment.user?.name ? comment.user.name[0].toUpperCase() : "U"
                       )}
-                    </div>
+                    </Link>
                     <div className="comment-body">
                       <div className="comment-header">
-                        <span className="comment-username">
+                        <Link to={`/profile/${comment.user?._id || comment.user?.id}`} className="comment-username" style={{ textDecoration: "none", fontWeight: 600 }}>
                           {comment.user?.name || "anonymous"}
-                        </span>
+                        </Link>
                         <span className="comment-time">
                           {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : "Just now"}
                         </span>

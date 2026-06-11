@@ -247,15 +247,7 @@ const CreateBlog = () => {
                 />
               </div>
 
-              <div className="input-group">
-                <input
-                  type="text"
-                  placeholder="Tags..."
-                  className="blog-input-clean"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                />
-              </div>
+             
 
               <div className="input-group user-tagging-group" style={{ position: "relative" }} ref={suggestionsRef}>
                 <input

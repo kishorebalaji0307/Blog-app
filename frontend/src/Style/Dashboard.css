@@ -8,7 +8,7 @@
 .main-content {
   flex-grow: 1;
   margin-left: 240px; /* aligns with desktop sidebar width */
-  padding: 60px 20px;
+  padding: 110px 20px 60px 20px; /* offset for desktop top header */
   display: flex;
   justify-content: center;
   box-sizing: border-box;

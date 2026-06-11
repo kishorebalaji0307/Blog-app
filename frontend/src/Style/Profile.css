@@ -1,7 +1,7 @@
 .profile-content {
   flex-grow: 1;
   margin-left: 240px;
-  padding: 60px 40px;
+  padding: 110px 40px 60px 40px; /* offset for desktop top header */
   display: flex;
   justify-content: center;
   box-sizing: border-box;
@@ -509,4 +509,38 @@
 .change-avatar-btn:hover {
   background-color: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Follow / Unfollow buttons */
+.follow-btn {
+  background: var(--accent-gradient);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px var(--accent-glow);
+  transition: var(--transition-normal);
+}
+
+.follow-btn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 18px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+.unfollow-btn {
+  background: transparent !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.unfollow-btn:hover {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+  transform: none;
 }
